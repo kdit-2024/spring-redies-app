@@ -1,10 +1,14 @@
 package shop.mtcoding.bank.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import shop.mtcoding.bank.config.RedisConfig;
 
 @RequiredArgsConstructor
 @Controller
@@ -12,10 +16,19 @@ public class UserController {
 
     private final HttpSession session;
     private final UserService userService;
+    private final RedisConfig redisConfig;
 
     @GetMapping("/home")
     public String home(){
+        System.out.println(redisConfig.getRedisHost());
         return "home";
+    }
+
+    @GetMapping("/redis/test")
+    public @ResponseBody String redisTest(){
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        System.out.println("username : "+sessionUser.getUsername());
+        return "redis test";
     }
 
     @GetMapping("/logout")
@@ -25,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(UserRequest.LoginDTO reqDTO){
+    public String login(UserRequest.LoginDTO reqDTO) throws JsonProcessingException {
         User sessionUser = userService.로그인(reqDTO);
         if(sessionUser == null){
             throw new RuntimeException("아이디 혹은 패스워드가 틀렸습니다");
